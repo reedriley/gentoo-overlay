@@ -1,0 +1,27 @@
+--- a/gui/setup.py	2017-01-16 19:02:28.000000000 +0200
++++ b/gui/setup.py	2017-05-18 23:13:55.090760511 +0300
+@@ -59,24 +59,6 @@
+         # Run the usual distutils install routine:
+         install.run(self)
+ 
+-        # Make sure the schema file is updated.
+-        # Otherwise the gui will trace trap.
+-        print('==> Compiling GLib Schema files')
+-
+-        try:
+-            subprocess.call([
+-                'glib-compile-schemas',
+-                os.path.join(PREFIX, 'share/glib-2.0/schemas')
+-            ])
+-        except subprocess.CalledProcessError as err:
+-            print('==> Could not update schemas: ', err)
+-            print('==> Please run the following manually:\n')
+-            print('    sudo glib-compile-schemas {prefix}'.format(
+-                prefix=os.path.join(PREFIX, 'share/glib-2.0/schemas')
+-            ))
+-        else:
+-            print('==> OK!')
+-
+ 
+ setup(
+     name='Shredder',
