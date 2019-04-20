@@ -1,0 +1,13 @@
+diff --git a/lib/utilities.c b/lib/utilities.c
+index e768fa41..29810316 100644
+--- a/lib/utilities.c
++++ b/lib/utilities.c
+@@ -981,7 +981,7 @@ bool rm_mounts_can_reflink(RmMountTable *self, dev_t source, dev_t dest) {
+  * Needs to be freed with g_free if not NULL.
+  * */
+ static struct fiemap *rm_offset_get_fiemap(int fd, const int n_extents,
+-                                           const int file_offset) {
++                                           const uint64_t file_offset) {
+     /* struct fiemap does not allocate any extents by default,
+      * so we allocate the nominated number
+      * */
