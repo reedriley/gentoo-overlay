@@ -51,6 +51,7 @@ src_prepare() {
 
 	# Prevent installing /usr/share/glib-2.0/schemas/gschemas.compiled, gnome2-utils updates it
 	epatch "${FILESDIR}/${PN}-gui-dont-compile-schemas.patch"
+	epatch "${FILESDIR}/${PN}-fix-xattr.patch"
 
 	if ! use doc ; then
 		sed -i -e "/SConscript('docs\/SConscript')/d" SConstruct || die "couldn't disable docs"
