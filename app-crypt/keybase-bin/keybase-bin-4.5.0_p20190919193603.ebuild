@@ -39,7 +39,6 @@ src_install() {
 	doexe opt/keybase/libffmpeg.so
 	doexe opt/keybase/libEGL.so
 	doexe opt/keybase/libGLESv2.so
-	doexe opt/keybase/libVkICD_mock_icd.so
 	doexe opt/keybase/post_install.sh
 	rm -f opt/keybase/{Keybase,lib*.so,post_install.sh}
 
