@@ -18,7 +18,7 @@ RESTRICT="mirror"
 LICENSE="BSD"
 SLOT="0"
 KEYWORDS="-* ~x86 ~amd64"
-IUSE=""
+IUSE="gui"
 
 DEPEND=""
 RDEPEND="${DEPEND}
@@ -26,8 +26,11 @@ RDEPEND="${DEPEND}
 	!app-crypt/keybase
 	app-crypt/gnupg
 	sys-fs/fuse
-	gnome-base/gconf
-	x11-libs/libXScrnSaver"
+	gui? (
+		gnome-base/gconf
+		x11-libs/libXScrnSaver
+	)
+"
 
 S="${WORKDIR}"
 
@@ -35,10 +38,12 @@ QA_PREBUILT="*"
 
 src_install() {
 	exeinto /opt/keybase
-	doexe opt/keybase/Keybase
-	doexe opt/keybase/libffmpeg.so
-	doexe opt/keybase/libEGL.so
-	doexe opt/keybase/libGLESv2.so
+	if use gui; then
+		doexe opt/keybase/Keybase
+		doexe opt/keybase/libffmpeg.so
+		doexe opt/keybase/libEGL.so
+		doexe opt/keybase/libGLESv2.so
+	fi
 	doexe opt/keybase/post_install.sh
 	rm -f opt/keybase/{Keybase,lib*.so,post_install.sh}
 
