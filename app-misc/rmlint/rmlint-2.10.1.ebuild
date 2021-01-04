@@ -1,13 +1,12 @@
 # Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# Original Source: https://github.com/Jormangeud/jrg-overlay/tree/7c07bdc58b80885722e2b70e8e6c4de6960194e9/app-misc/rmlint
 
-EAPI=6
-DISTUTILS_OPTIONAL=1
-PYTHON_COMPAT=( python3_{4,5,6,7} )
+EAPI=7
 
+PLOCALES="de es fr"
+PYTHON_COMPAT=( python3_{7..9} )
 
-inherit multilib scons-utils toolchain-funcs eutils distutils-r1 gnome2-utils
+inherit eutils distutils-r1 gnome2-utils l10n python-r1 scons-utils
 
 if [[ ${PV} = *9999* ]]; then
 	inherit git-r3
@@ -18,64 +17,72 @@ else
 	KEYWORDS="~amd64 ~x86"
 fi
 
-DESCRIPTION="Utility to find and remove space waste and broken things on filesystems"
-HOMEPAGE="https://github.com/sahib/rmlint/ http://rmlint.readthedocs.org/"
+DESCRIPTION="rmlint finds space waste and other broken things on your filesystem and offers to remove it"
+HOMEPAGE="https://github.com/sahib/rmlint"
 
-X86_CPU_FEATURES=( cpu_flags_x86_sse4_2 )
-IUSE="doc gui nls ${X86_CPU_FEATURES[@]}"
+LICENSE="GPL-3"
+SLOT="0"
+IUSE="doc nls test gui"
+RESTRICT="!test? ( test )"
+REQUIRED_USE="gui? ( ${PYTHON_REQUIRED_USE} )"
 
 RDEPEND="
 	sys-libs/glibc
 	>=dev-libs/glib-2.32
 	dev-libs/json-glib
 	sys-apps/util-linux
-	dev-libs/elfutils
+	virtual/libelf
 	gui? (
 		${PYTHON_DEPS}
 		x11-libs/gtk+:3
-		dev-python/pygobject:3
+		dev-python/pygobject:3[${PYTHON_USEDEP}]
 		gnome-base/librsvg
 		x11-libs/gtksourceview:3.0
 	)
 "
 DEPEND="${RDEPEND}
+	sys-kernel/linux-headers
+	virtual/pkgconfig
 	nls? ( sys-devel/gettext )
-        doc? ( dev-python/sphinx )"
+	doc? ( dev-python/sphinx[${PYTHON_USEDEP}] )
+	test? ( dev-python/nose[${PYTHON_USEDEP}]
+		dev-python/nose-parameterized[${PYTHON_USEDEP}] )"
 
-REQUIRED_USE="gui? ( ${PYTHON_REQUIRED_USE} )"
+DOCS=( CHANGELOG.md README.rst gui/TODO )
 
-SLOT="0"
-LICENSE="GPL-3"
-
-src_prepare() {
-
+src_prepare(){
 	# Prevent installing /usr/share/glib-2.0/schemas/gschemas.compiled, gnome2-utils updates it
 	epatch "${FILESDIR}/${PN}-gui-dont-compile-schemas.patch"
 
-	if ! use doc ; then
-		sed -i -e "/SConscript('docs\/SConscript')/d" SConstruct || die "couldn't disable docs"
-	fi
-	if ! use nls; then
-		sed -i -e "/SConscript('po\/SConscript')/d" SConstruct || die "couldn't disable nls"
-	fi
-	if ! use gui; then
-		sed -i -e "/SConscript('gui\/SConscript')/d" SConstruct || die "couldn't disable gui"
-	fi
-	if ! use cpu_flags_x86_sse4_2; then
-		sed -i -e "s/conf.env.Append(CCFLAGS=['-msse4.2'])/pass/" SConstruct || die "couldn't disable sse4.2"
-	fi
 	default
+
+	l10n_find_plocales_changes po "" .po
+	rm_locale() {
+		rm -fv po/"${1}".po || die "removing of ${1}.po failed"
+	}
+	l10n_for_each_disabled_locale_do rm_locale
+
+	python_setup
 }
 
-src_compile() {
-	myconf=$(use_with nls gettext)
-	escons CC="$(tc-getCC)" --prefix=${D}/usr --actual-prefix=/usr --libdir=/usr/$(get_libdir) ${myconf}
+src_configure(){
+	escons config LIBDIR=/usr/$(get_libdir) --prefix="${ED}"/usr --actual-prefix=/usr $(use_with nls gettext) $(use_with gui gui)
+
 }
 
-src_install() {
-	escons --prefix=${D}/usr --actual-prefix=/usr --libdir=/usr/$(get_libdir) install
-	if use gui; then
-		python_foreach_impl python_newscript gui/shredder/__main__.py shredder
+src_compile(){
+	escons DEBUG=0 CC="$(tc-getCC)" LIBDIR=/usr/$(get_libdir) --prefix="${ED}"/usr --actual-prefix=/usr
+}
+
+src_install(){
+	default
+
+	escons install DEBUG=0 LIBDIR=/usr/$(get_libdir) --prefix="${ED}"/usr --actual-prefix=/usr
+
+	rm -f ${ED}/usr/share/glib-2.0/schemas/gschemas.compiled
+	if ! use gui; then
+		rm -rf "${D}"/usr/share/{glib-2.0,icons,applications}
+		rm -rf "${D}"/usr/lib
 	fi
 }
 
