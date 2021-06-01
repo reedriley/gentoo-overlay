@@ -41,12 +41,13 @@ RDEPEND="
 	)
 "
 DEPEND="${RDEPEND}
+	dev-util/scons[${PYTHON_USEDEP}]
 	sys-kernel/linux-headers
 	virtual/pkgconfig
 	nls? ( sys-devel/gettext )
 	doc? ( dev-python/sphinx[${PYTHON_USEDEP}] )
 	test? ( dev-python/nose[${PYTHON_USEDEP}]
-		dev-python/nose-parameterized[${PYTHON_USEDEP}] )"
+		dev-python/parameterized[${PYTHON_USEDEP}] )"
 
 DOCS=( CHANGELOG.md README.rst gui/TODO )
 
