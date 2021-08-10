@@ -6,7 +6,7 @@ EAPI=7
 PLOCALES="de es fr"
 PYTHON_COMPAT=( python3_{7..9} )
 
-inherit eutils distutils-r1 gnome2-utils l10n python-r1 scons-utils
+inherit eutils distutils-r1 gnome2-utils plocale python-r1 scons-utils
 
 if [[ ${PV} = *9999* ]]; then
 	inherit git-r3
@@ -57,11 +57,11 @@ src_prepare(){
 
 	default
 
-	l10n_find_plocales_changes po "" .po
+	plocale_find_changes po "" .po
 	rm_locale() {
 		rm -fv po/"${1}".po || die "removing of ${1}.po failed"
 	}
-	l10n_for_each_disabled_locale_do rm_locale
+	plocale_for_each_disabled_locale rm_locale
 
 	python_setup
 }
